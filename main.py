@@ -29,8 +29,9 @@ async def _speak_async(text: str) -> None:
 
 
 def _open_browser() -> None:
-    import subprocess
-    subprocess.Popen(["open", "-a", "Google Chrome", "http://localhost:7001"])
+    if not active_connections:
+        import subprocess
+        subprocess.Popen(["open", "-a", "Google Chrome", "http://localhost:7001"])
 
 
 async def serial_relay() -> None:
@@ -38,9 +39,12 @@ async def serial_relay() -> None:
         try:
             cmd = serial_worker.command_queue.get_nowait()
             if cmd == "START":
-                _open_browser()
-                serial_worker.send_status("listening...")
-                await broadcast({"type": "record_start"})
+                if not active_connections:
+                    serial_worker.send_status("opening...")
+                    _open_browser()
+                else:
+                    serial_worker.send_status("listening...")
+                    await broadcast({"type": "record_start"})
             elif cmd == "STOP":
                 serial_worker.send_status("processing...")
                 await broadcast({"type": "record_stop"})
@@ -84,6 +88,7 @@ async def websocket_chat(websocket: WebSocket):
     global _tts_task
     await websocket.accept()
     active_connections.add(websocket)
+    serial_worker.send_status("lulu.ai is ready:")
     history: list[dict] = []
     try:
         while True:
