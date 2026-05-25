@@ -1,19 +1,18 @@
 # lulu.ai — Local Voice Assistant
 
-lulu.ai is a fully local, private voice assistant I built from scratch that runs entirely on my machine. No cloud, no API fees, no subscriptions. I talk to it through a physical button I wired up on an Arduino, it listens, thinks, and talks back — all while showing its status on an LCD screen sitting on my desk.
+lulu.ai is a fully local, private voice assistant I built from scratch that runs entirely on my machine. No cloud, no API fees, no subscriptions. I talk to it through a physical button I wired up on an Arduino, it listens, thinks, and talks back. It does so while showing its status on an LCD screen sitting on my desk.
 
-Think of it as my own version of a smart assistant, except I own every piece of it.
 
 ---
 
 ## What It Does
 
-- **Voice in** — press the physical button or click the mic in the browser, speak, and your words get transcribed locally using Faster Whisper
+- **Voice in** — press the physical button or click the mic in the browser, speak, and your words get transcribed locally using the Faster Whisper
 - **AI responses** — runs a local LLM (Qwen2.5 7B) through Ollama, streams the response back token by token like ChatGPT
 - **Voice out** — Lulu speaks the response back through your speaker, and you can cut it off mid-sentence with a Stop button
-- **Live web search** — asks about the weather or wants to know the latest news? It pulls real data from the web before answering instead of making things up
-- **Hardware integration** — a physical Arduino button starts and stops recording, an LCD screen shows what Lulu is doing in real time (listening, processing, speaking)
-- **Smart browser launch** — pressing the Arduino button when the browser isn't open automatically launches Chrome to the right URL
+- **Live web search** — Using duckduck go, you can ask about the weather or  latest news. It pulls real data from the web before answering.
+- **Hardware integration** — Q physical Arduino button starts and stops recording, an LCD screen shows what Lulu is doing in real time (listening, processing, speaking)
+- **Smart browser launch** — By pressing the Arduino button when the browser isn't open automatically launches Chrome to the right URL
 
 ---
 
@@ -35,14 +34,14 @@ Think of it as my own version of a smart assistant, except I own every piece of 
 
 ## How It's Built
 
-The backend is a single FastAPI server that handles everything — WebSocket connections from the browser, serial communication with the Arduino, audio transcription, LLM streaming, and TTS playback.
+The backend is a single FastAPI server that handles everything, the webSocket connections from the browser, serial communication with the Arduino, audio transcription, LLM streaming, and TTS playback.
 
 When you send a message (voice or text):
-1. Python checks if the question needs live data (weather or web search) and fetches it first
-2. The query + live data gets sent to Ollama, which streams the response back token by token
+1. Python checks if the question needs live data (weather or web search) and fetches it first (still a work in progress, its prone to hallucination)
+2. The query and live data gets sent to Ollama, which streams the response back token by token
 3. The browser renders each token as it arrives
-4. Once the response is done, Lulu speaks it through the speaker using a subprocess — which means you can kill it mid-sentence cleanly
-5. The Arduino LCD updates at every stage so you always know what's happening
+4. Once the response is done, Lulu speaks it through the speaker using a subprocess, meaning you can kill it mid-sentence cleanly
+5. The Arduino LCD updates at every stage so you always know what's happening 
 
 The Arduino runs a sketch that toggles between `START` and `STOP` on each button press and displays status strings sent from Python over serial.
 
@@ -77,15 +76,15 @@ Open `http://localhost:7001`.
 
 ## Why I Built This
 
-I wanted a voice assistant I actually control — no data leaving my machine, no monthly fees, no vendor lock-in. I also wanted to learn how all the pieces fit together: local LLMs, real-time audio, WebSockets, and hardware integration in one project.
+I was bored and wanted a voice assistant I actually control, no data leaving my machine, and no monthly fees. I also wanted to learn how all the pieces fit together: local LLMs, real-time audio, WebSockets, and hardware integration in one project.
 
 The plan is to eventually move this off my laptop and onto a Raspberry Pi 5 so it runs standalone on my desk 24/7.
 
 ---
 
-## What's Next
+## Next steps
 
 - Move to Raspberry Pi 5 for standalone operation
 - Swap macOS `say` for Piper TTS for a better voice
-- Add wake word detection so the button isn't needed
-- Add conversation memory so Lulu remembers context across sessions
+- Add wake word detection so the button isn't needed!
+- Add conversation memory so Lulu remembers context across sessions!
