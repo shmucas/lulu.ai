@@ -28,11 +28,17 @@ async def _speak_async(text: str) -> None:
     await loop.run_in_executor(None, tts.speak, text)
 
 
+def _open_browser() -> None:
+    import subprocess
+    subprocess.Popen(["open", "-a", "Google Chrome", "http://localhost:7001"])
+
+
 async def serial_relay() -> None:
     while True:
         try:
             cmd = serial_worker.command_queue.get_nowait()
             if cmd == "START":
+                _open_browser()
                 serial_worker.send_status("listening...")
                 await broadcast({"type": "record_start"})
             elif cmd == "STOP":

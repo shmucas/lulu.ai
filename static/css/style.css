@@ -138,13 +138,20 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
 #stop-tts-btn {
-  background: #7c3aed;
+  background: var(--surface-2);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.85rem;
-  padding: 8px 18px;
-  border-radius: 99px;
+  font-size: 0.82rem;
+  padding: 7px 16px;
+  border-radius: 8px;
+}
+
+#stop-tts-btn:hover {
+  color: var(--text);
+  opacity: 1;
+  background: #4a4a4a;
 }
 #mic-btn.recording { background: #dc2626; animation: pulse 1s ease-in-out infinite; }
 
