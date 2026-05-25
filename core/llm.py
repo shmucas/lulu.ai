@@ -30,15 +30,22 @@ async def stream_response(prompt: str, history: list[dict]) -> AsyncIterator[str
                     break
 
 
+SYSTEM_PROMPT = (
+    "You are Lulu, a friendly and concise voice assistant. "
+    "Always refer to yourself as Lulu, never as 'AI' or 'assistant'. "
+    "Keep responses short and conversational."
+)
+
+
 def _build_prompt(user_message: str, history: list[dict]) -> str:
-    parts = []
+    parts = [f"System: {SYSTEM_PROMPT}"]
     for turn in history:
         role = turn.get("role", "")
         content = turn.get("content", "")
         if role == "user":
             parts.append(f"User: {content}")
         elif role == "assistant":
-            parts.append(f"Assistant: {content}")
+            parts.append(f"Lulu: {content}")
     parts.append(f"User: {user_message}")
-    parts.append("Assistant:")
+    parts.append("Lulu:")
     return "\n".join(parts)

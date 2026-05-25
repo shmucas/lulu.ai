@@ -127,3 +127,8 @@ button:hover { opacity: 0.85; }
 button:disabled { opacity: 0.4; cursor: not-allowed; }
 
 #send-btn { background: var(--accent); }
+
+#mic-btn { background: var(--surface-2); }
+#mic-btn.recording { background: #dc2626; animation: pulse 1s ease-in-out infinite; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }

@@ -1,11 +1,17 @@
 const chat = document.getElementById("chat");
 const input = document.getElementById("message-input");
 const sendBtn = document.getElementById("send-btn");
+const micBtn = document.getElementById("mic-btn");
 const statusBadge = document.getElementById("status-badge");
 
 const ws = new WebSocket(`ws://${location.host}/ws`);
 
 let currentBubble = null;
+let mediaRecorder = null;
+let audioChunks = [];
+let recording = false;
+
+// ── WebSocket ──────────────────────────────────────────────
 
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
@@ -32,6 +38,8 @@ ws.onmessage = (event) => {
 
 ws.onclose = () => setStatus("DISCONNECTED");
 
+// ── Send ───────────────────────────────────────────────────
+
 function send() {
   const text = input.value.trim();
   if (!text || ws.readyState !== WebSocket.OPEN) return;
@@ -45,6 +53,79 @@ function send() {
 
   ws.send(JSON.stringify({ message: text }));
 }
+
+// ── Voice recording ────────────────────────────────────────
+
+micBtn.addEventListener("click", async () => {
+  if (!recording) {
+    await startRecording();
+  } else {
+    stopRecording();
+  }
+});
+
+async function startRecording() {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const mimeType = getSupportedMimeType();
+  mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+  audioChunks = [];
+
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data.size > 0) audioChunks.push(e.data);
+  };
+
+  mediaRecorder.onstop = async () => {
+    stream.getTracks().forEach((t) => t.stop());
+    const blob = new Blob(audioChunks, { type: mimeType || "audio/webm" });
+    await transcribe(blob, mimeType);
+  };
+
+  mediaRecorder.start();
+  recording = true;
+  micBtn.classList.add("recording");
+  setStatus("LISTENING");
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    mediaRecorder.stop();
+  }
+  recording = false;
+  micBtn.classList.remove("recording");
+  setStatus("PROCESSING");
+}
+
+async function transcribe(blob, mimeType) {
+  const ext = (mimeType || "").includes("mp4") ? "audio.mp4" : "audio.webm";
+  const formData = new FormData();
+  formData.append("file", blob, ext);
+
+  try {
+    const res = await fetch("/transcribe", { method: "POST", body: formData });
+    const { text } = await res.json();
+    if (text) {
+      input.value = text;
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 160) + "px";
+      send();
+    }
+  } catch (err) {
+    console.error("Transcription error:", err);
+  }
+  setStatus("READY");
+}
+
+function getSupportedMimeType() {
+  const types = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/ogg;codecs=opus",
+    "audio/mp4",
+  ];
+  return types.find((t) => MediaRecorder.isTypeSupported(t)) || "";
+}
+
+// ── Helpers ────────────────────────────────────────────────
 
 function addBubble(role, text) {
   const div = document.createElement("div");
@@ -63,6 +144,8 @@ function scrollToBottom() {
   chat.scrollTop = chat.scrollHeight;
 }
 
+// ── Events ─────────────────────────────────────────────────
+
 sendBtn.addEventListener("click", send);
 
 input.addEventListener("keydown", (e) => {
@@ -72,7 +155,6 @@ input.addEventListener("keydown", (e) => {
   }
 });
 
-// Auto-resize textarea
 input.addEventListener("input", () => {
   input.style.height = "auto";
   input.style.height = Math.min(input.scrollHeight, 160) + "px";
