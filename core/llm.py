@@ -2,7 +2,7 @@ import httpx
 from typing import AsyncIterator
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL = "qwen2.5:3b"
+MODEL = "llama3.2"
 MAX_TOKENS = 500
 
 
