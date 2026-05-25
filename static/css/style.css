@@ -129,6 +129,23 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 #send-btn { background: var(--accent); }
 
 #mic-btn { background: var(--surface-2); }
+
+#stop-tts-bar {
+  padding: 8px 16px;
+  border-top: 1px solid var(--surface-2);
+  display: flex;
+  justify-content: center;
+}
+
+#stop-tts-btn {
+  background: #7c3aed;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  padding: 8px 18px;
+  border-radius: 99px;
+}
 #mic-btn.recording { background: #dc2626; animation: pulse 1s ease-in-out infinite; }
 
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }

@@ -3,6 +3,8 @@ const input = document.getElementById("message-input");
 const sendBtn = document.getElementById("send-btn");
 const micBtn = document.getElementById("mic-btn");
 const statusBadge = document.getElementById("status-badge");
+const stopTtsBar = document.getElementById("stop-tts-bar");
+const stopTtsBtn = document.getElementById("stop-tts-btn");
 
 const ws = new WebSocket(`ws://${location.host}/ws`);
 
@@ -16,7 +18,11 @@ let recording = false;
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
 
-  if (data.type === "status") {
+  if (data.type === "record_start") {
+    if (!recording) startRecording();
+  } else if (data.type === "record_stop") {
+    if (recording) stopRecording();
+  } else if (data.type === "status") {
     setStatus(data.value);
   } else if (data.type === "token") {
     if (!currentBubble) {
@@ -30,6 +36,10 @@ ws.onmessage = (event) => {
       currentBubble.classList.remove("streaming");
       currentBubble = null;
     }
+  } else if (data.type === "tts_start") {
+    stopTtsBar.hidden = false;
+  } else if (data.type === "tts_end") {
+    stopTtsBar.hidden = true;
     sendBtn.disabled = false;
     input.disabled = false;
     input.focus();
@@ -147,6 +157,11 @@ function scrollToBottom() {
 // ── Events ─────────────────────────────────────────────────
 
 sendBtn.addEventListener("click", send);
+
+stopTtsBtn.addEventListener("click", () => {
+  ws.send(JSON.stringify({ type: "stop_tts" }));
+  stopTtsBar.hidden = true;
+});
 
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {

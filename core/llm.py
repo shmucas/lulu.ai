@@ -30,15 +30,20 @@ async def stream_response(prompt: str, history: list[dict]) -> AsyncIterator[str
                     break
 
 
-SYSTEM_PROMPT = (
-    "You are Lulu, a friendly and concise voice assistant. "
-    "Always refer to yourself as Lulu, never as 'AI' or 'assistant'. "
-    "Keep responses short and conversational."
-)
+def _system_prompt() -> str:
+    from datetime import datetime
+    now = datetime.now().strftime("%A, %B %d, %Y at %I:%M %p")
+    return (
+        f"You are Lulu, a friendly and concise voice assistant. "
+        f"Always refer to yourself as Lulu, never as 'AI' or 'assistant'. "
+        f"Keep responses short and conversational. "
+        f"The current date and time is {now}. "
+        f"You do not have access to real-time weather or internet data — say so if asked."
+    )
 
 
 def _build_prompt(user_message: str, history: list[dict]) -> str:
-    parts = [f"System: {SYSTEM_PROMPT}"]
+    parts = [f"System: {_system_prompt()}"]
     for turn in history:
         role = turn.get("role", "")
         content = turn.get("content", "")
