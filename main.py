@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from core.llm import stream_response
 from core import stt, serial_worker, tts
+from core.tools import detect_and_fetch
 
 active_connections: set[WebSocket] = set()
 _tts_task: asyncio.Task | None = None
@@ -115,8 +116,11 @@ async def websocket_chat(websocket: WebSocket):
             serial_worker.send_status("lulu.ai is processing...")
 
             try:
+                loop = asyncio.get_event_loop()
+                context = await loop.run_in_executor(None, detect_and_fetch, user_message)
+
                 full_response = ""
-                async for token in stream_response(user_message, history):
+                async for token in stream_response(user_message, history, context):
                     full_response += token
                     await websocket.send_json({"type": "token", "value": token})
 
